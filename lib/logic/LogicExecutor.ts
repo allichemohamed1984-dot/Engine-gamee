@@ -241,12 +241,23 @@ export class LogicExecutor {
     if (!this.isRunning) return;
     this.elapsedTime += dt;
 
+    const entities = this.ecsWorld.getAllEntities().filter((e) => e.active);
+
+    // Find the player entity for proximity checks (CharacterController or subType === 'player')
+    const playerEntity =
+      entities.find(
+        (e) =>
+          e.object3D?.userData?.subType === 'player' ||
+          e.hasComponent('CharacterController') ||
+          e.name.toLowerCase().includes('player')
+      ) || null;
+
     // Update Trigger Volumes & Checkpoints
     if (this.triggerVolumeManager) {
       this.triggerVolumeManager.update(
         dt,
         this.elapsedTime,
-        this.ecsWorld.getAllEntities(),
+        entities,
         () => playerEntity,
         this.isRunning
       );
@@ -273,17 +284,6 @@ export class LogicExecutor {
         this.floatingTexts.splice(i, 1);
       }
     }
-
-    const entities = this.ecsWorld.getAllEntities().filter((e) => e.active);
-
-    // Find the player entity for proximity checks (CharacterController or subType === 'player')
-    const playerEntity =
-      entities.find(
-        (e) =>
-          e.object3D?.userData?.subType === 'player' ||
-          e.hasComponent('CharacterController') ||
-          e.name.toLowerCase().includes('player')
-      ) || null;
 
     for (const entity of entities) {
       const obj = entity.object3D;

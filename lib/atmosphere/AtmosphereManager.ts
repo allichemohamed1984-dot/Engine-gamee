@@ -4,6 +4,7 @@ import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
 import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
+import { CelShaderPass } from '../vfx/CelShaderPass';
 import {
   AtmosphereData,
   PostProcessingData,
@@ -239,6 +240,7 @@ export class AtmosphereManager {
   public bloomPass: UnrealBloomPass | null = null;
   public ssaoPass: ShaderPass | null = null;
   public colorPass: ShaderPass | null = null;
+  public celShaderPass: CelShaderPass | null = null;
   public renderPass: RenderPass | null = null;
 
   // Internal time tracking
@@ -329,10 +331,21 @@ export class AtmosphereManager {
     this.colorPass = new ShaderPass(ColorCorrectionShader);
     this.updateColorPassUniforms();
     this.composer.addPass(this.colorPass);
+    
+    this.celShaderPass = new CelShaderPass();
+    this.celShaderPass.setEnabled(false);
+    this.celShaderPass.setResolution(size.x, size.y);
+    this.composer.addPass(this.celShaderPass);
 
     // 4. Final Output Pass
     const outputPass = new OutputPass();
     this.composer.addPass(outputPass);
+  }
+
+  public set2DModeEnabled(enabled: boolean): void {
+    if (this.celShaderPass) {
+      this.celShaderPass.setEnabled(enabled);
+    }
   }
 
   private updateSSAOPassUniforms(): void {
@@ -377,6 +390,9 @@ export class AtmosphereManager {
     }
     if (this.ssaoPass) {
       this.ssaoPass.uniforms.resolution.value.set(width, height);
+    }
+    if (this.celShaderPass) {
+      this.celShaderPass.setResolution(width, height);
     }
   }
 

@@ -1459,6 +1459,64 @@ export default class CustomEntityScript extends Script {
                   />
                 </div>
               )}
+              
+              {/* 6. Toon & Outline Controls */}
+              <div className="space-y-2 pt-2 border-t border-zinc-800/60">
+                <div className="flex items-center gap-1.5 font-semibold text-zinc-200 uppercase tracking-wider text-[11px] mb-2">
+                  <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Rendu Toon & Contours</span>
+                </div>
+
+                {/* Toon Intensity */}
+                <div className="space-y-1">
+                  <div className="flex justify-between text-[11px]">
+                    <span className="text-zinc-400">Intensité Toon</span>
+                    <span className="font-mono text-zinc-300">{(material.toonIntensity || 0).toFixed(1)}</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="1"
+                    max="10"
+                    step="1"
+                    value={material.toonIntensity || 1}
+                    onChange={(e) => onUpdateMaterial(selectedNode.id, { toonIntensity: parseFloat(e.target.value) })}
+                    className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                  />
+                </div>
+
+                {/* Outline Color */}
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] text-zinc-400">Couleur Contour</span>
+                  <div className="flex items-center gap-2">
+                    <div className="w-5 h-5 rounded-md border border-zinc-700 relative overflow-hidden" style={{ backgroundColor: material.outlineColor || '#000000' }}>
+                      <input
+                        type="color"
+                        value={material.outlineColor || '#000000'}
+                        onChange={(e) => onUpdateMaterial(selectedNode.id, { outlineColor: e.target.value })}
+                        className="opacity-0 absolute inset-0 cursor-pointer w-full h-full"
+                      />
+                    </div>
+                    <span className="font-mono text-[10px] text-zinc-400 uppercase">{material.outlineColor || '#000000'}</span>
+                  </div>
+                </div>
+
+                {/* Outline Thickness */}
+                <div className="space-y-1">
+                  <div className="flex justify-between text-[11px]">
+                    <span className="text-zinc-400">Épaisseur Contour</span>
+                    <span className="font-mono text-zinc-300">{(material.outlineThickness || 0).toFixed(2)}</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="2"
+                    step="0.05"
+                    value={material.outlineThickness || 0}
+                    onChange={(e) => onUpdateMaterial(selectedNode.id, { outlineThickness: parseFloat(e.target.value) })}
+                    className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                  />
+                </div>
+              </div>
             </div>
 
             {/* 6. Roughness Map Toggle */}
@@ -1516,6 +1574,47 @@ export default class CustomEntityScript extends Script {
                 >
                   <span className="w-4 h-4 rounded-full bg-white shadow-md" />
                 </button>
+              </div>
+            </div>
+
+            {/* 8. Toon Shader & Outline Controls */}
+            <div className="space-y-2 pt-2 border-t border-zinc-800/60">
+              <span className="text-[11px] text-zinc-400 font-bold uppercase">Rendu Toon & Contours</span>
+              
+              <div className="space-y-1">
+                <div className="flex justify-between text-[11px]">
+                  <span className="text-zinc-400">Intensité Toon</span>
+                  <span className="font-mono text-zinc-300">
+                    {(material.toonIntensity ?? 1.0).toFixed(1)}
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min="0.5"
+                  max="5.0"
+                  step="0.1"
+                  value={material.toonIntensity ?? 1.0}
+                  onChange={(e) =>
+                    onUpdateMaterial(selectedNode.id, {
+                      toonIntensity: parseFloat(e.target.value),
+                    })
+                  }
+                  className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                />
+              </div>
+
+              <div className="flex items-center justify-between pt-1">
+                <span className="text-[11px] text-zinc-400">Contour (Outline)</span>
+                <input
+                  type="color"
+                  value={material.outlineColor ?? '#000000'}
+                  onChange={(e) =>
+                    onUpdateMaterial(selectedNode.id, {
+                      outlineColor: e.target.value,
+                    })
+                  }
+                  className="w-8 h-6 rounded bg-zinc-800 border border-zinc-700 cursor-pointer"
+                />
               </div>
             </div>
           </div>

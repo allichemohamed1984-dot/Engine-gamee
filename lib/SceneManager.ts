@@ -48,9 +48,12 @@ import {
   ColliderComponent,
   CharacterControllerComponent,
   RigAnimComponent,
+  ToonMaterialComponent,
+  OutlineComponent,
   Entity,
 } from './ecs/ECS';
 import { PhysicsSystem } from './ecs/PhysicsSystem';
+import { ToonMaterialSystem } from './ecs/ToonMaterialSystem';
 import { PhysicsManager } from './physics/PhysicsManager';
 import { RagdollSystem } from './physics/RagdollSystem';
 import { LogicExecutor } from './logic/LogicExecutor';
@@ -186,6 +189,7 @@ export class SceneManager {
     this.physicsManager = new PhysicsManager(this.ecsWorld);
     this.physicsSystem = new PhysicsSystem(this.physicsManager);
     this.ecsWorld.addSystem(this.physicsSystem);
+    this.ecsWorld.addSystem(new ToonMaterialSystem());
     this.navMeshManager = new NavMeshManager();
     this.triggerVolumeManager = new TriggerVolumeManager();
     this.logicExecutor = new LogicExecutor(this.ecsWorld);
@@ -286,14 +290,17 @@ export class SceneManager {
     // Initialize Post-Processing
     this.composer = new EffectComposer(this.renderer);
     this.composer.addPass(new RenderPass(this.scene, this.camera));
+    
+    // Add Cel-Shading earlier in the chain, after RenderPass
+    this.celShaderPass = new CelShaderPass();
+    this.celShaderPass.setResolution(width, height);
+    this.composer.addPass(this.celShaderPass);
+    
     this.bloomPass = new UnrealBloomPass(new THREE.Vector2(width, height), 0.5, 0.4, 0.85);
     this.composer.addPass(this.bloomPass);
     const fxaaPass = new ShaderPass(FXAAShader);
     fxaaPass.uniforms.resolution.value.set(1 / width, 1 / height);
     this.composer.addPass(fxaaPass);
-    this.celShaderPass = new CelShaderPass();
-    this.celShaderPass.setResolution(width, height);
-    this.composer.addPass(this.celShaderPass);
 
     // 4. OrbitControls
     this.orbitControls = new OrbitControls(this.camera, this.renderer.domElement);
@@ -2905,6 +2912,8 @@ export class SceneManager {
     const obj = this.objects.get(id);
     if (!obj) return;
 
+    this.syncECSComponents(id, matData);
+
     const applyToStandardMat = (mat: THREE.MeshStandardMaterial) => {
       if (matData.color !== undefined) {
         mat.color.set(matData.color);
@@ -3053,6 +3062,30 @@ export class SceneManager {
     this.notifyHierarchy();
     if (this.selectedObject?.uuid === id) {
       this.triggerSelectionChange();
+    }
+  }
+
+  private syncECSComponents(id: string, matData: Partial<MaterialData>): void {
+    const entity = this.ecsWorld.getEntity(id);
+    if (entity) {
+      if (matData.toonIntensity !== undefined) {
+        let toonComp = entity.getComponent<ToonMaterialComponent>('ToonMaterial');
+        if (!toonComp) {
+          toonComp = new ToonMaterialComponent(matData.toonIntensity);
+          entity.addComponent(toonComp);
+        } else {
+          toonComp.colorLevels = matData.toonIntensity;
+        }
+      }
+      if (matData.outlineColor !== undefined) {
+        let outlineComp = entity.getComponent<OutlineComponent>('Outline');
+        if (!outlineComp) {
+          outlineComp = new OutlineComponent(1.0, matData.outlineColor);
+          entity.addComponent(outlineComp);
+        } else {
+          outlineComp.color = matData.outlineColor;
+        }
+      }
     }
   }
 
@@ -3266,6 +3299,9 @@ export class SceneManager {
     this.camera.aspect = width / height;
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(width, height);
+    if (this.celShaderPass) {
+      this.celShaderPass.setResolution(width, height);
+    }
     if (this.atmosphereManager) {
       this.atmosphereManager.setSize(width, height);
     }
@@ -3387,6 +3423,9 @@ export class SceneManager {
   public toggle2DEffect(enabled: boolean): void {
     if (this.celShaderPass) {
       this.celShaderPass.setEnabled(enabled);
+    }
+    if (this.atmosphereManager) {
+      this.atmosphereManager.set2DModeEnabled(enabled);
     }
   }
 

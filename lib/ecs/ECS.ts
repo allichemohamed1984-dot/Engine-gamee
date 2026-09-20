@@ -244,7 +244,35 @@ export class ScriptComponent extends BaseComponent {
 }
 
 /**
- * 8. RigAnim Component (Animation Mapping & Rigging metadata)
+ * 8. Toon Material Component
+ */
+export class ToonMaterialComponent extends BaseComponent {
+  readonly type = 'ToonMaterial';
+  public colorLevels: number = 4.0;
+  public vibrancy: number = 1.0;
+  constructor(colorLevels = 4.0, vibrancy = 1.0) {
+    super();
+    this.colorLevels = colorLevels;
+    this.vibrancy = vibrancy;
+  }
+}
+
+/**
+ * 9. Outline Component
+ */
+export class OutlineComponent extends BaseComponent {
+  readonly type = 'Outline';
+  public strength: number = 1.0;
+  public color: string = '#000000';
+  constructor(strength = 1.0, color = '#000000') {
+    super();
+    this.strength = strength;
+    this.color = color;
+  }
+}
+
+/**
+ * 10. RigAnim Component (Animation Mapping & Rigging metadata)
  */
 import { RigAnimData } from '../../types/engine';
 export class RigAnimComponent extends BaseComponent {

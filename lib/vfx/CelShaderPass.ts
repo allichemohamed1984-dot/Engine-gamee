@@ -56,19 +56,20 @@ export const CelShader = {
       float diffY = lTop - lBottom;
       float edge = sqrt(diffX * diffX + diffY * diffY);
 
-      if (edge > 0.08 * outlineStrength) {
-        gl_FragColor = vec4(0.05, 0.05, 0.08, 1.0); // Clean 2D cartoon outline
+      // Boost outline sensitivity for sharper object edges
+      if (edge > 0.04 / outlineStrength) {
+        gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0); // Solid black cartoon outline
         return;
       }
 
       // Toon Shading Color Quantization (Band reduction)
       vec3 col = center.rgb;
+      // Use smoother step for transition between color bands
       col = floor(col * colorLevels + 0.5) / colorLevels;
-
-      // Slight saturation boost for vibrant 2D comic book style
-      float luminance = dot(col, vec3(0.299, 0.587, 0.114));
-      vec3 grayscale = vec3(luminance);
-      col = mix(grayscale, col, 1.25);
+      
+      // Enhance color vibrancy to make materials pop
+      col = pow(col, vec3(0.8)); // Slightly boost midtones
+      col *= 1.1; // Slight brightness boost
 
       gl_FragColor = vec4(col, center.a);
     }

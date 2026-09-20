@@ -67,6 +67,9 @@ export interface MaterialData {
   mapUrl?: string;
   repeatU?: number;
   repeatV?: number;
+  toonIntensity?: number; // Add this
+  outlineColor?: string; // Add this
+  outlineThickness?: number; // Add this
 }
 
 export interface LightData {
